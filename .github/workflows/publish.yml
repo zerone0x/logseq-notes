@@ -1,7 +1,16 @@
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -9,11 +18,18 @@ jobs:
     name: Publish Logseq graph
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: logseq/publish-spa@v0.3.1
+        with:
+          graph-directory: .
+          output-directory: www
       - name: Add a nojekyll file
         run: touch $GITHUB_WORKSPACE/www/.nojekyll
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: www
-
+          branch: gh-pages
+          clean: true
+          single-commit: false
